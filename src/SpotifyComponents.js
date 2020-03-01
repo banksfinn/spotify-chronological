@@ -14,6 +14,7 @@ export class SpotifyAPI extends React.Component {
             method: "POST",
             headers: {
                 'Content-Type': 'application/x-www-form-url-encoded',
+                'Accept': 'application/json',
                 'Authorization': 'Basic MGIzMWY3ODI2YzFhNDAxZGFkNzE2MzE0NzQ3MWNhZjU6YTEzZjg2YjcwNWQ3NDcwYzhhNDcyZTJlMDQ2OTI4MDQ=',
             }
         };

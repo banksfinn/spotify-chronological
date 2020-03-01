@@ -5,7 +5,7 @@ import { SpotifyAPI } from './SpotifyComponents'
 function App() {
   return (
       <div>
-        <SpotifyAPI>tmep</SpotifyAPI>
+        <SpotifyAPI>temp</SpotifyAPI>
       </div>
   );
 }
