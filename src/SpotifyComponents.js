@@ -6,10 +6,10 @@ export class SpotifyAPI extends React.Component {
 
 
     async get_access() {
-
         const pre_request = {
             method: "POST",
             headers: {
+                'Content-Type' :'application/json',
                 'Authorization': process.env.REACT_APP_AUTH,
             }
         };
