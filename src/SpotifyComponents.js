@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'semantic-ui-react';
+import * as ConstClass from 'Constants.js';
 
 export class SpotifyAPI extends React.Component {
 
@@ -7,18 +8,15 @@ export class SpotifyAPI extends React.Component {
 
 
     async get_access() {
-        // client_id = 0b31f7826c1a401dad7163147471caf5;
-        // client_secret = a13f86b705d7470c8a472e2e04692804;
-
         const pre_request = {
             method: "POST",
             headers: {
-                'Authorization': 'Basic MGIzMWY3ODI2YzFhNDAxZGFkNzE2MzE0NzQ3MWNhZjU6YTEzZjg2YjcwNWQ3NDcwYzhhNDcyZTJlMDQ2OTI4MDQ=',
+                'Authorization': ConstClass.AUTHORIZATION,
             }
         };
         pre_request.body = "grant_type=client_credentials";
         let access_token = "";
-        await fetch('https://accounts.spotify.com/api/token', pre_request).then((response) => console.log(response.json()))//.then((responseData) => {access_token=responseData['access_token']});
+        await fetch('https://accounts.spotify.com/api/token', pre_request).then((response) => console.log(response.json()));//.then((responseData) => {access_token=responseData['access_token']});
         console.log(access_token);
     }
 
