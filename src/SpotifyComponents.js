@@ -1,17 +1,16 @@
 import React from 'react';
 import { Button } from 'semantic-ui-react';
-import * as ConstClass from 'Constants.js';
-
 export class SpotifyAPI extends React.Component {
 
 
 
 
     async get_access() {
+
         const pre_request = {
             method: "POST",
             headers: {
-                'Authorization': ConstClass.AUTHORIZATION,
+                'Authorization': process.env.REACT_APP_AUTH,
             }
         };
         pre_request.body = "grant_type=client_credentials";
