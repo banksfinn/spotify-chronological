@@ -40,15 +40,17 @@ async function getTracks(type, auth, url, query) {
 
 function removeDuplicateSongs(data) {
     let new_data = [];
-    console.log('There are ' + data.length + ' songs before trimming');
+    let repeats = 0;
     let songs = {};
     for (let song of data) {
-        if (!song['name'] in songs) {
+        if (song['name'] in songs) {
+            repeats += 1;
+        } else {
             new_data.push(song);
             songs[song['name']] = 1
         }
     }
-    console.log('There are ' + new_data.length + ' songs after trimming');
+    console.log('There been ' + repeats + ' songs removed after trimming');
     return new_data
 }
 
@@ -83,7 +85,6 @@ export class SpotifyAPI extends React.Component {
         if (this.access_token === "")
             await this.get_access();
         let i = 0;
-        console.log(this.state);
         let criteria = 'include_groups=';
         criteria += this.state.albums_incl ? "album," : "";
         criteria += this.state.singles_incl ? "single," : "";
