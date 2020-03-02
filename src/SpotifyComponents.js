@@ -1,15 +1,27 @@
 import React from 'react';
-import {Button} from 'semantic-ui-react';
+import {Button, Input, Form} from 'semantic-ui-react';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 async function formQuery(type, auth, url, query) {
     const pre_request = {
         method: type,
-        headers: {'Authorization': 'Bearer ' + auth, 'Content-Type': 'application/json'}
+        headers: {'Authorization': 'Bearer ' + auth, 'Content-Type': 'application/json', 'Accept': 'application/json'}
     };
     let q_response = "";
     await fetch(url + query, pre_request).then((response) => response.json()).then((responseData) => q_response=responseData);
-    console.log(q_response);
     return q_response;
+}
+
+async function getSongsFromAlbum(album_id, date, auth) {
+    let songs = [];
+    let items = await formQuery("GET", auth, 'https://api.spotify.com/v1/albums/' + album_id + "/tracks", "");
+
+    let i = 0;
+    for (let item of items['items']) {
+        songs.push({'uri': item['uri'], 'name': item['name'], 'date': date, 'order': i});
+        i += 1;
+    }
+    return songs;
 }
 
 async function getTracks(type, auth, url, query) {
@@ -19,17 +31,34 @@ async function getTracks(type, auth, url, query) {
     };
     let q_response = "";
     await fetch(url + query, pre_request).then((response) => response.json()).then((responseData) => q_response=responseData['items']);
-    console.log(q_response);
-    console.log(typeof(q_response));
     let tracks = [];
     for (let i = 0; i < q_response.length; i++) {
-        tracks.push({'link': q_response[i]['external_urls']['spotify'], 'date': q_response[i]['release_date']});
+        tracks.push({'id': q_response[i.toString()]['id'], 'date': q_response[i.toString()]['release_date']});
     }
     return tracks;
 }
 
-function createCopyList(data) {
-    console.log(typeof(data));
+function removeDuplicateSongs(data) {
+    let new_data = [];
+    console.log('There are ' + data.length + ' songs before trimming');
+    let songs = {};
+    for (let song of data) {
+        if (!song['name'] in songs) {
+            new_data.push(song);
+            songs[song['name']] = 1
+        }
+    }
+    console.log('There are ' + new_data.length + ' songs after trimming');
+    return new_data
+}
+
+function createSingleList(data, key) {
+    let string = "";
+    for (let track of data) {
+        string += track[key];
+        string += "\n";
+    }
+    return string;
 }
 
 export class SpotifyAPI extends React.Component {
@@ -37,22 +66,56 @@ export class SpotifyAPI extends React.Component {
     constructor(props) {
         super(props);
         this.access_token = "";
+        this.artist = "";
         this.state = {
-            message: 'Default content'
-        }
+            message: 'Default content',
+            copy_value: '',
+            count: "There are 0 songs (so far)",
+            albums_incl: false,
+            singles_incl: false,
+            appears_on: false,
+            compilation: false
+        };
+        this.handleInputChange = this.handleInputChange.bind(this);
     }
 
     async get_tracks(id) {
         if (this.access_token === "")
             await this.get_access();
         let i = 0;
-        let tracks = await getTracks("GET", this.access_token, "https://api.spotify.com/v1/artists/" + id + "/albums", "?offset=0&limit=50&include_groups=album,single,appears_on,compilation&market=US");
-        while (tracks.length / (i + 1) === 50) {
-            let new_tracks = await getTracks("GET", this.access_token, "https://api.spotify.com/v1/artists/" + id + "/albums", "?offset=" + i + "&limit=50&include_groups=album,single,appears_on,compilation&market=US");
-            tracks.push(new_tracks)
+        console.log(this.state);
+        let criteria = 'include_groups=';
+        criteria += this.state.albums_incl ? "album," : "";
+        criteria += this.state.singles_incl ? "single," : "";
+        criteria += this.state.appears_on ? "appears_on," : "";
+        criteria += this.state.compilation ? "compilation," : "";
+        criteria = criteria.slice(0, -1);
+        let albums = await getTracks("GET",
+            this.access_token, "https://api.spotify.com/v1/artists/" + id + "/albums",
+            "?offset=0&limit=50&" + criteria + "&market=US");
+        while (albums.length / (i + 1) === 50) {
+            let new_albums = await getTracks("GET", this.access_token, "https://api.spotify.com/v1/artists/" + id + "/albums", "?offset=" + i + "&limit=50&" + criteria + "&market=US");
+            albums = albums.concat(new_albums);
+            i += 1;
         }
-        console.log(tracks);
-        createCopyList(tracks);
+        let tracks = [];
+        for (let j = 0; j < albums.length; j++) {
+            let new_tracks = await getSongsFromAlbum(albums[j]['id'], albums[j]['date'], this.access_token);
+            tracks = tracks.concat(new_tracks)
+        }
+        tracks = removeDuplicateSongs(tracks);
+        this.setState({count: "There are " + tracks.length + " songs."});
+        this.setState({copy_value: createSingleList(tracks, 'uri')});
+        this.setState({message: createSingleList(tracks, 'name')});
+    }
+
+    async get_artist(artist) {
+        if (this.access_token === "")
+            await this.get_access();
+        artist = encodeURIComponent(artist.trim());
+        let artists = await formQuery("GET", this.access_token, "https://api.spotify.com/v1/search", "?q=" + artist + "&type=artist");
+        let artist_id = artists['artists']['items'][0]['id'];
+        this.get_tracks(artist_id)
     }
 
     async get_access() {
@@ -66,7 +129,8 @@ export class SpotifyAPI extends React.Component {
         };
         pre_request.body = "grant_type=client_credentials";
         let access_token = "";
-        await fetch('https://accounts.spotify.com/api/token', pre_request).then((response) => response.json()).then((responseData) => {access_token=responseData['access_token']});
+        await fetch('https://accounts.spotify.com/api/token',
+            pre_request).then((response) => response.json()).then((responseData) => {access_token=responseData['access_token']});
         this.access_token = access_token;
     }
 
@@ -77,19 +141,48 @@ export class SpotifyAPI extends React.Component {
         this.setState({message: resp})
     }
 
+    handleInputChange(event) {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+
+        this.setState({
+            [name]: value
+        });
+    }
+
     render() {
         return (
             <div>
-            <Button style={{margin: '2% 10% 2% 10%'}} onClick={() => {
-                this.get_access()
-            }}>
-                <Button.Content>Send Request</Button.Content>
-            </Button>
-                <Button style={{margin: '2% 10% 2% 10%'}} onClick={() => {
-                    this.get_tracks("45eNHdiiabvmbp4erw26rg")
-                }}>
-                    <Button.Content>Send Request</Button.Content>
-                </Button>
+                <div>{ this.state.count } </div>
+                <Form.Field>
+                    <input
+                        name="albums_incl"
+                        type="checkbox"
+                        checked={this.state.albums_incl}
+                        onChange={this.handleInputChange}/>
+                    <input
+                        name="singles_incl"
+                        type="checkbox"
+                        checked={this.state.singles_incl}
+                        onChange={this.handleInputChange}/>
+                    <input
+                        name="appears_on"
+                        type="checkbox"
+                        checked={this.state.appears_on}
+                        onChange={this.handleInputChange}/>
+                    <input
+                        name="compilation"
+                        type="checkbox"
+                        checked={this.state.compilation}
+                        onChange={this.handleInputChange}/>
+                    <Input type='text' id="artist_id" placeholder="insert artist name here"
+                           onChange={()=>{this.artist = document.getElementById('artist_id').value}}/>
+                    <Button onClick={()=> this.get_artist(this.artist)}>Look up Artist</Button>
+                </Form.Field>
+                <CopyToClipboard text={this.state.copy_value}>
+                    <button>Copy to clipboard with button, paste into a new album!</button>
+                </CopyToClipboard>
                 <div>{ this.state.message } </div>
             </div>
         )
