@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/spotify-chronological/static/css/main.d1b05096.chunk.css",
-    "main.js": "/spotify-chronological/static/js/main.eb8fdde3.chunk.js",
-    "main.js.map": "/spotify-chronological/static/js/main.eb8fdde3.chunk.js.map",
+    "main.js": "/spotify-chronological/static/js/main.9fa595c2.chunk.js",
+    "main.js.map": "/spotify-chronological/static/js/main.9fa595c2.chunk.js.map",
     "runtime-main.js": "/spotify-chronological/static/js/runtime-main.ac0642a0.js",
     "runtime-main.js.map": "/spotify-chronological/static/js/runtime-main.ac0642a0.js.map",
     "static/css/2.47e06e2e.chunk.css": "/spotify-chronological/static/css/2.47e06e2e.chunk.css",
     "static/js/2.c7be7da3.chunk.js": "/spotify-chronological/static/js/2.c7be7da3.chunk.js",
     "static/js/2.c7be7da3.chunk.js.map": "/spotify-chronological/static/js/2.c7be7da3.chunk.js.map",
     "index.html": "/spotify-chronological/index.html",
-    "precache-manifest.c25ab57a39f4b5072a66a0d8654276c8.js": "/spotify-chronological/precache-manifest.c25ab57a39f4b5072a66a0d8654276c8.js",
+    "precache-manifest.9e20dfc4ee42b2e34b737189c68dc514.js": "/spotify-chronological/precache-manifest.9e20dfc4ee42b2e34b737189c68dc514.js",
     "service-worker.js": "/spotify-chronological/service-worker.js",
     "static/css/2.47e06e2e.chunk.css.map": "/spotify-chronological/static/css/2.47e06e2e.chunk.css.map",
     "static/css/main.d1b05096.chunk.css.map": "/spotify-chronological/static/css/main.d1b05096.chunk.css.map",
@@ -20,6 +20,6 @@
     "static/css/2.47e06e2e.chunk.css",
     "static/js/2.c7be7da3.chunk.js",
     "static/css/main.d1b05096.chunk.css",
-    "static/js/main.eb8fdde3.chunk.js"
+    "static/js/main.9fa595c2.chunk.js"
   ]
 }
